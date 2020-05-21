@@ -23,14 +23,19 @@ namespace Covid19Watcher.API.Public.Services
         /// </summary>
         /// <param name="filters"></param>
         /// <returns></returns>
-        public async Task<GetNotificationsResponse> ListNotificationsAsync(GetFiltersRequest filters)
+        public async Task<ResultData> ListNotificationsAsync(GetFiltersRequest filters)
         {
             var result = await _repo.ListFilteredAsync(filters);
 
-            return new GetNotificationsResponse(filters.Page, filters.Limit)
-            {
-                Content = result
-            };
+            if (result.Count < 1)
+                return ErrorData(ServiceErrors.Get_ListNotificationsAsync_404_Notification);
+
+            return SuccessData(
+                new GetNotificationsResponse(filters.Page, filters.Limit)
+                {
+                    Content = result
+                }
+            );
         }
         /// <summary>
         /// 

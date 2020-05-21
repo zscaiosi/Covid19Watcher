@@ -11,5 +11,7 @@ namespace Covid19Watcher.API.Public.Data.MongoDB.Documents
         public string CountryName {get;set;}
         [BsonElement("active")]
         public bool Active {get;set;}
+        [BsonElement("capturedAt")]
+        public DateTime CapturedAt {get;set;}
     }
 }

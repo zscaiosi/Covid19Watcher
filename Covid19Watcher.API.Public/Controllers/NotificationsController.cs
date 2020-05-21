@@ -28,7 +28,16 @@ namespace Covid19Watcher.API.Public.Controllers
         {
             try
             {
-                return StatusCode(200, await _service.ListNotificationsAsync(filters));
+                var response = await _service.ListNotificationsAsync(filters);
+
+                if (response.Success)
+                {
+                    return StatusCode(200, response);
+                }
+                else
+                {
+                    return StatusCode(404, response);
+                }
             }
             catch(Exception e)
             {

@@ -60,7 +60,8 @@ namespace Covid19Watcher.API.Public.Data.MongoDB.Repositories
             {
                 Id = id,
                 CountryName = request.CountryName,
-                Active = request.IsActive
+                Active = request.IsActive,
+                CapturedAt = request.CaptureTime
             });
 
             return id;
