@@ -4,3 +4,5 @@ Covid19Watcher.API.Public/*.json
 Covid19Watcher.Application/*.json
 Covid19Watcher.Application/obj
 Covid19Watcher.Application/bin
+Covid19Watcher.Scraper/obj
+Covid19Watcher.Scraper/bin
