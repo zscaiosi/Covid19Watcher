@@ -9,5 +9,7 @@ namespace Covid19Watcher.API.Public.Interfaces
     public interface INotificationsRepository
     {
         Task<List<NotificationDocument>> ListFilteredAsync(GetFiltersRequest filters);
+        Task<Guid> CreateNotificationAsync(PostNotificationsRequest request);
+        Task<NotificationDocument> FindByIdAsync(string id);
     }
 }

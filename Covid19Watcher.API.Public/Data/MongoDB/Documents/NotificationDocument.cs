@@ -1,3 +1,4 @@
+using System;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 namespace Covid19Watcher.API.Public.Data.MongoDB.Documents
@@ -5,8 +6,7 @@ namespace Covid19Watcher.API.Public.Data.MongoDB.Documents
     public class NotificationDocument
     {
         [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string Id {get;set;}
+        public Guid Id {get;set;}
         [BsonElement("countryName")]
         public string CountryName {get;set;}
         [BsonElement("active")]

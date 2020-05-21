@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Covid19Watcher.API.Public.Contracts;
 using Covid19Watcher.API.Public.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Covid19Watcher.API.Public.Controllers
 {
@@ -17,12 +18,58 @@ namespace Covid19Watcher.API.Public.Controllers
         {
             _service = service;
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="filters"></param>
+        /// <returns></returns>
         [HttpGet]
         public async Task<IActionResult> Get([FromQuery]GetFiltersRequest filters)
         {
             try
             {
                 return StatusCode(200, await _service.ListNotificationsAsync(filters));
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return StatusCode(500, nameof(Exception));
+            }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<IActionResult> Post([FromBody]PostNotificationsRequest request)
+        {
+            try
+            {
+                var response = await _service.CreateNotificationAsync(request);
+
+                if (response.Success)
+                    return StatusCode(200, response);
+                else
+                    return StatusCode(400, response);
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return StatusCode(500, nameof(Exception));
+            }
+        }
+        [HttpGet("find/{id}")]
+        public async Task<IActionResult> GetFind(string id)
+        {
+            try
+            {
+                var response = await _service.FindByIdAsync(id);
+
+                if (response.Success)
+                    return StatusCode(200, response);
+                else
+                    return StatusCode(400, response);
             }
             catch(Exception e)
             {

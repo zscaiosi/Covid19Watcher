@@ -4,6 +4,7 @@ using Covid19Watcher.API.Public.Contracts;
 using Covid19Watcher.API.Public.Data.MongoDB.Documents;
 using Covid19Watcher.API.Public.Interfaces;
 using System.Linq;
+using System;
 
 namespace Covid19Watcher.API.Public.Data.MongoDB.Repositories
 {
@@ -46,6 +47,35 @@ namespace Covid19Watcher.API.Public.Data.MongoDB.Repositories
             }
 
             return documents;
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public async Task<Guid> CreateNotificationAsync(PostNotificationsRequest request)
+        {
+            var id = Guid.NewGuid();
+            await _notificationsDAO.CreateNotificationAsync(new NotificationDocument
+            {
+                Id = id,
+                CountryName = request.CountryName,
+                Active = request.IsActive
+            });
+
+            return id;
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public async Task<NotificationDocument> FindByIdAsync(string id)
+        {
+            if (!Guid.TryParse(id, out var _id))
+                throw new ArgumentException();
+            
+            return await _notificationsDAO.FindByIdAsync(_id);
         }
     }
 }

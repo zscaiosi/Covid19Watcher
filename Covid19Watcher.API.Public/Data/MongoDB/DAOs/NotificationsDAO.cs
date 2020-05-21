@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Covid19Watcher.API.Public.Data.MongoDB.Documents;
@@ -33,5 +34,19 @@ namespace Covid19Watcher.API.Public.Data.MongoDB.DAOs
         /// <returns></returns>
         public async Task<NotificationDocument> FindByCountry(string countryName, bool isActive) =>
             (await _ctx.Notifications.FindAsync<NotificationDocument>(n => n.CountryName == countryName && n.Active == isActive)).FirstOrDefault();
+        /// <summary>
+        /// Inserts one document into collection
+        /// </summary>
+        /// <param name="document"></param>
+        /// <returns></returns>
+        public async Task CreateNotificationAsync(NotificationDocument document) =>
+            await _ctx.Notifications.InsertOneAsync(document);
+        /// <summary>
+        /// Finds a specific notification
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public async Task<NotificationDocument> FindByIdAsync(Guid id) =>
+            (await _ctx.Notifications.FindAsync(n => n.Id == id)).FirstOrDefault();
     }
 }
