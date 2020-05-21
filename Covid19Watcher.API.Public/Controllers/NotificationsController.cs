@@ -9,7 +9,7 @@ using Covid19Watcher.API.Public.Interfaces;
 namespace Covid19Watcher.API.Public.Controllers
 {
     [ApiController]
-    [Route("[controller]")]    
+    [Route("api/[controller]")]    
     public class NotificationsController : ControllerBase
     {
         private readonly INotificationsService _service;
@@ -18,7 +18,17 @@ namespace Covid19Watcher.API.Public.Controllers
             _service = service;
         }
         [HttpGet]
-        public async Task<IActionResult> Get([FromQuery]GetFiltersRequest filters) =>
-            Ok(await _service.ListNotificationsAsync(filters));
+        public async Task<IActionResult> Get([FromQuery]GetFiltersRequest filters)
+        {
+            try
+            {
+                return StatusCode(200, await _service.ListNotificationsAsync(filters));
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return StatusCode(500, nameof(Exception));
+            }
+        }
     }
 }
