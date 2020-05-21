@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Covid19Watcher.API.Public.Contracts;
-using Covid19Watcher.API.Public.Interfaces;
-using Microsoft.AspNetCore.Authorization;
+using Covid19Watcher.Application.Contracts;
+using Covid19Watcher.Application.Interfaces;
 
 namespace Covid19Watcher.API.Public.Controllers
 {
