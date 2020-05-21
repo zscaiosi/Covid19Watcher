@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Covid19Watcher.API.Public.Data.MongoDB.Documents;
+using Covid19Watcher.API.Public.Enums;
 using Covid19Watcher.API.Public.Interfaces;
 using MongoDB.Driver;
 
@@ -24,8 +25,21 @@ namespace Covid19Watcher.API.Public.Data.MongoDB.DAOs
         /// </summary>
         /// <typeparam name="NotificationDocument"></typeparam>
         /// <returns></returns>
-        public async Task<List<NotificationDocument>> ListDocuments(bool isActive) =>
-            (await _ctx.Notifications.FindAsync<NotificationDocument>(d => d.Active == isActive)).ToList();
+        public async Task<List<NotificationDocument>> ListDocuments(bool isActive, EOrdenation ordenation)
+        {
+            FilterDefinition<NotificationDocument> filter = Builders<NotificationDocument>.Filter.And(
+                Builders<NotificationDocument>.Filter.Eq(nameof(NotificationDocument.Active), isActive)
+            );
+
+            var oDef = this.OrderBy(ordenation);
+
+            return (await _ctx.Notifications.FindAsync(filter, new FindOptions<NotificationDocument, NotificationDocument>()
+            {
+                Sort = oDef
+            })).ToList();
+        }
+        //  =>
+        //     (await _ctx.Notifications.FindAsync<NotificationDocument>(d => d.Active == isActive)).ToList();
         /// <summary>
         /// Finds the Country's active notification
         /// </summary>
@@ -48,5 +62,24 @@ namespace Covid19Watcher.API.Public.Data.MongoDB.DAOs
         /// <returns></returns>
         public async Task<NotificationDocument> FindByIdAsync(Guid id) =>
             (await _ctx.Notifications.FindAsync(n => n.Id == id)).FirstOrDefault();
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ordenation"></param>
+        /// <returns></returns>
+        private SortDefinition<NotificationDocument> OrderBy(EOrdenation ordenation)
+        {
+            switch (ordenation)
+            {
+                case EOrdenation.Infections:
+                    return Builders<NotificationDocument>.Sort.Descending(nameof(NotificationDocument.Infections));
+                case EOrdenation.Deaths:
+                    return Builders<NotificationDocument>.Sort.Descending(nameof(NotificationDocument.Deaths));
+                case EOrdenation.Recovered:
+                    return Builders<NotificationDocument>.Sort.Descending(nameof(NotificationDocument.Recovered));
+                default:
+                    return Builders<NotificationDocument>.Sort.Descending(nameof(NotificationDocument.Infections));
+            }
+        }
     }
 }

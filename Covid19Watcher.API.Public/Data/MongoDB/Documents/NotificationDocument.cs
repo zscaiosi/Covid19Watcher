@@ -13,5 +13,11 @@ namespace Covid19Watcher.API.Public.Data.MongoDB.Documents
         public bool Active {get;set;}
         [BsonElement("capturedAt")]
         public DateTime CapturedAt {get;set;}
+        [BsonElement("infections")]
+        public int Infections {get;set;} = 0;
+        [BsonElement("deaths")]
+        public int Deaths {get;set;} = 0;
+        [BsonElement("recovered")]
+        public int Recovered {get;set;} = 0;
     }
 }

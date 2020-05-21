@@ -35,7 +35,7 @@ namespace Covid19Watcher.API.Public.Data.MongoDB.Repositories
             }
             else
             {
-                documents = await _notificationsDAO.ListDocuments(filters.onlyActives);
+                documents = await _notificationsDAO.ListDocuments(filters.onlyActives, filters.OrderBy);
             }
             if (filters.Page > 0)
             {
@@ -61,7 +61,10 @@ namespace Covid19Watcher.API.Public.Data.MongoDB.Repositories
                 Id = id,
                 CountryName = request.CountryName,
                 Active = request.IsActive,
-                CapturedAt = request.CaptureTime
+                CapturedAt = request.CaptureTime,
+                Infections = request.Infections,
+                Deaths = request.Deaths,
+                Recovered = request.Recovered
             });
 
             return id;
