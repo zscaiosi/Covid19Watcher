@@ -6,3 +6,4 @@ Covid19Watcher.Application/obj
 Covid19Watcher.Application/bin
 Covid19Watcher.Scraper/obj
 Covid19Watcher.Scraper/bin
+Covid19Watcher.Scraper/*.json
