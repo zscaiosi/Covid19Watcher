@@ -5,24 +5,15 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": ".NET Core Launch (web)",
+            "name": ".NET Core Launch (console)",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/Covid19Watcher.API.Public/bin/Debug/netcoreapp3.1/Covid19Watcher.API.Public.dll",
+            "program": "${workspaceFolder}/Covid19Watcher.Scraper/bin/Debug/netcoreapp3.1/Covid19Watcher.Scraper.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/Covid19Watcher.API.Public",
-            "stopAtEntry": false,
-            "serverReadyAction": {
-                "action": "openExternally",
-                "pattern": "^\\s*Now listening on:\\s+(https?://\\S+)"
-            },
-            "env": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
-            },
-            "sourceFileMap": {
-                "/Views": "${workspaceFolder}/Views"
-            }
+            "cwd": "${workspaceFolder}/Covid19Watcher.Scraper",
+            "console": "internalConsole",
+            "stopAtEntry": false
         },
         {
             "name": ".NET Core Attach",
