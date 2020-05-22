@@ -7,7 +7,9 @@ using OpenQA.Selenium;
 using Covid19Watcher.Scraper.WebElements;
 using System.Linq;
 using Covid19Watcher.Application.Helpers;
+using Covid19Watcher.Application.Enums;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace Covid19Watcher.Scraper.Services
 {
@@ -18,7 +20,8 @@ namespace Covid19Watcher.Scraper.Services
     {
         private readonly IConfiguration _conf;
         protected ChromeDriver _driver {get;set;}
-        protected PostNotificationsRequest _postRequest {get;set;}
+        protected List<PostNotificationsRequest> _postRequests {get;set;}
+        protected string _currentCountry {get;set;}
         public ChromeService(IConfiguration conf)
         {
             _conf = conf;
@@ -36,19 +39,31 @@ namespace Covid19Watcher.Scraper.Services
         /// <returns></returns>
         public async Task RunAsync()
         {
-            await LoadPageAsync();
+            // Dynamically searches for all intended countries.
+            // It is way more efficient than navigating throught the page and sinulating clicks and types
+            var countries = Enum.GetNames(typeof(ECountries));
 
-            await LoadPanelAsync();
+            foreach (var c in countries)
+            {
+                _currentCountry = c;
 
-            Console.WriteLine(JsonConvert.SerializeObject(_postRequest));
+                await LoadPageAsync();
+
+                await LoadPanelAsync();
+            }
+
+            Console.WriteLine(JsonConvert.SerializeObject(_postRequests.FirstOrDefault()));
+            // Clear resources
+            _driver.Close();
+            _driver.Dispose();
         }
         private async Task LoadPageAsync()
         {
             await Task.Run(() => {
-                // Two minutes
-                _driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(120);
+                // One minute
+                _driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(60);
                 // Navigate to page
-                _driver.Navigate().GoToUrl(_conf.GetSection("SeleniumConfigurations").GetSection("URI").Value);
+                _driver.Navigate().GoToUrl(_conf.GetSection("SeleniumConfigurations").GetSection("URI").Value + _currentCountry);
             });
         }
         /// <summary>
@@ -83,7 +98,7 @@ namespace Covid19Watcher.Scraper.Services
 
                 var infoTileData = new InfoTileData(infoTile.InfoTileData.FindElements(By.ClassName("legend")).ToArray());
 
-                _postRequest = ExtractInfos(
+                ExtractInfos(
                     new string[]
                     {
                         infoTileData.GetActive(),
@@ -94,19 +109,25 @@ namespace Covid19Watcher.Scraper.Services
             });
         }
         /// <summary>
-        /// 
+        /// Extracts infos into POST Requests payloads
         /// </summary>
         /// <param name="confirmedSituations"></param>
         /// <returns></returns>
-        private PostNotificationsRequest ExtractInfos(params string[] confirmedSituations)
+        private void ExtractInfos(params string[] confirmedSituations)
         {
             var result = new PostNotificationsRequest();
 
+            result.CaptureTime = DateTime.UtcNow;
+            result.CountryName = _currentCountry;
             result.Infections = confirmedSituations[0].IgnoreAfter("+").SanitizeCommas();
             result.Recovered = confirmedSituations[1].IgnoreAfter("+").SanitizeCommas();
             result.Deaths = confirmedSituations[2].IgnoreAfter("+").SanitizeCommas();
 
-            return result;
+            // Instantiates if first iteration
+            if (_postRequests == null)
+                _postRequests = new List<PostNotificationsRequest>();
+            
+            _postRequests.Add(result);
         }
     }
 }
