@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Covid19Watcher.Scraper.Services;
+using Covid19Watcher.Application.Contracts;
 
 namespace Covid19Watcher.Scraper
 {
@@ -57,6 +58,8 @@ namespace Covid19Watcher.Scraper
                 .Build();
             // Injects
             serviceCollection.AddSingleton<IConfiguration>(configuration);
+            serviceCollection.AddHttpClient();
+            // serviceCollection.AddTransient<IRestService, RestService>();
             serviceCollection.AddTransient<ChromeService>();
         }
     }

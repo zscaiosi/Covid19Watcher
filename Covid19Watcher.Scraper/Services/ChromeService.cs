@@ -10,6 +10,8 @@ using Covid19Watcher.Application.Helpers;
 using Covid19Watcher.Application.Enums;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using Covid19Watcher.Application.Services;
+using System.Net.Http;
 
 namespace Covid19Watcher.Scraper.Services
 {
@@ -22,7 +24,9 @@ namespace Covid19Watcher.Scraper.Services
         protected ChromeDriver _driver {get;set;}
         protected List<PostNotificationsRequest> _postRequests {get;set;}
         protected string _currentCountry {get;set;}
-        public ChromeService(IConfiguration conf)
+        private IHttpClientFactory _factory;
+        private List<Task<ResultData>> _httpTasks;
+        public ChromeService(IConfiguration conf, IHttpClientFactory factory)
         {
             _conf = conf;
             // Sets chrome driver
@@ -32,6 +36,9 @@ namespace Covid19Watcher.Scraper.Services
                 _conf.GetSection("SeleniumConfigurations").GetSection("GoogleDriver").Value,
                 options
             );
+
+            _factory = factory;
+            _httpTasks = new List<Task<ResultData>>();
         }
         /// <summary>
         /// Runs browser async
@@ -50,12 +57,26 @@ namespace Covid19Watcher.Scraper.Services
                 await LoadPageAsync();
 
                 await LoadPanelAsync();
+
+                // Now prepares client and makes POST HTTP Request
+                var client = new RestService(_factory, _conf.GetSection("API_URI").Value);
+
+                _httpTasks.Add(
+                    client.MakeHttpPostRequest<PostNotificationsRequest, ResultData>("notifications", _postRequests.FirstOrDefault())
+                );
             }
 
             Console.WriteLine(JsonConvert.SerializeObject(_postRequests.FirstOrDefault()));
             // Clear resources
             _driver.Close();
             _driver.Dispose();
+            // Waits for all HTTP requests
+            var resultDatas = await Task.WhenAll(_httpTasks);
+
+            foreach (var rd in resultDatas)
+            {
+                Console.WriteLine(JsonConvert.SerializeObject(rd));
+            }
         }
         private async Task LoadPageAsync()
         {
