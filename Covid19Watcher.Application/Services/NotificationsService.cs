@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Covid19Watcher.Application.Contracts;
 using Covid19Watcher.Application.Errors;
@@ -47,7 +48,10 @@ namespace Covid19Watcher.Application.Services
             if (request.CaptureTime == null || string.IsNullOrEmpty(request.CountryName) || !Enum.IsDefined(typeof(ECountries), request.CountryName))
                 return ErrorData(ServiceErrors.Post_CreateNotificationAsync_400_Payload);
             
-            return SuccessData<Guid>(await _repo.CreateNotificationAsync(request));
+            if (await ShouldCreateNew(request))
+                return SuccessData<Guid>(await _repo.CreateNotificationAsync(request));
+            else
+                return SuccessData<string>(string.Empty);
         }
         /// <summary>
         /// Finds notification by GUID
@@ -60,6 +64,17 @@ namespace Covid19Watcher.Application.Services
                 return ErrorData(ServiceErrors.GetFind_FindByIdAsync_400_Id);
             
             return SuccessData<NotificationDocument>(await _repo.FindByIdAsync(id));
+        }
+        /// <summary>
+        /// Checks if differs
+        /// </summary>
+        /// <param name="countryName"></param>
+        /// <returns></returns>
+        private async Task<bool> ShouldCreateNew(PostNotificationsRequest doc)
+        {
+            var cases = await _repo.FindCountryCases(doc.CountryName);
+
+            return !cases.Any(c => c.Deaths == doc.Deaths && c.Recovered == doc.Recovered && c.Infections == doc.Infections);
         }
     }
 }

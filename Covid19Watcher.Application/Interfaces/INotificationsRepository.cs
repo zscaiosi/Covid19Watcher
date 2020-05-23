@@ -17,5 +17,11 @@ namespace Covid19Watcher.Application.Interfaces
         /// <param name="filters"></param>
         /// <returns></returns>
         Task<List<GroupedNotifications>> ListGroupedByCountryAsync(GetFiltersRequest filters);
+        /// <summary>
+        /// Finds only cases view
+        /// </summary>
+        /// <param name="countryName"></param>
+        /// <returns></returns>
+        Task<List<CountryCasesView>> FindCountryCases(string countryName);
     }
 }

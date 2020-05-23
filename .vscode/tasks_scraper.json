@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/Covid19Watcher.API.Public/Covid19Watcher.API.Public.csproj",
+                "${workspaceFolder}/Covid19Watcher.Scraper/Covid19Watcher.Scraper.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -19,7 +19,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/Covid19Watcher.API.Public/Covid19Watcher.API.Public.csproj",
+                "${workspaceFolder}/Covid19Watcher.Scraper/Covid19Watcher.Scraper.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -32,7 +32,7 @@
             "args": [
                 "watch",
                 "run",
-                "${workspaceFolder}/Covid19Watcher.API.Public/Covid19Watcher.API.Public.csproj",
+                "${workspaceFolder}/Covid19Watcher.Scraper/Covid19Watcher.Scraper.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],

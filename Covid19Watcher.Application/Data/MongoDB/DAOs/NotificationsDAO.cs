@@ -44,8 +44,8 @@ namespace Covid19Watcher.Application.Data.MongoDB.DAOs
         /// <param name="countryName"></param>
         /// <typeparam name="NotificationDocument"></typeparam>
         /// <returns></returns>
-        public async Task<NotificationDocument> FindByCountry(string countryName, bool isActive) =>
-            (await _ctx.Notifications.FindAsync<NotificationDocument>(n => n.CountryName == countryName && n.Active == isActive)).FirstOrDefault();
+        public async Task<List<NotificationDocument>> FindByCountry(string countryName, bool isActive) =>
+            (await _ctx.Notifications.FindAsync<NotificationDocument>(n => n.CountryName == countryName && n.Active == isActive)).ToList();
         /// <summary>
         /// Inserts one document into collection
         /// </summary>

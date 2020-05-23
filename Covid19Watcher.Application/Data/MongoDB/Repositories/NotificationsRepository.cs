@@ -29,9 +29,7 @@ namespace Covid19Watcher.Application.Data.MongoDB.Repositories
             // Retrieves and manipulates by filters
             if (!string.IsNullOrEmpty(filters.Country))
             {
-                documents.Add(
-                    await _notificationsDAO.FindByCountry(filters.Country, filters.onlyActives)
-                );
+                documents = await _notificationsDAO.FindByCountry(filters.Country, filters.onlyActives);
             }
             else
             {
@@ -84,7 +82,7 @@ namespace Covid19Watcher.Application.Data.MongoDB.Repositories
             return grouped.ToList();
         }
         /// <summary>
-        /// 
+        /// Creates a new notification
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
@@ -106,7 +104,7 @@ namespace Covid19Watcher.Application.Data.MongoDB.Repositories
             return id;
         }
         /// <summary>
-        /// 
+        /// Finds notification by GUID
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -126,5 +124,22 @@ namespace Covid19Watcher.Application.Data.MongoDB.Repositories
         /// <param name="cases"></param>
         /// <returns></returns>
         private decimal CalcRatio(int prevHour, int currentHour, int prevCases, int cases) => (cases - prevCases) / (currentHour - prevHour);
+        /// <summary>
+        /// Finds only cases view
+        /// </summary>
+        /// <param name="countryName"></param>
+        /// <returns></returns>
+        public async Task<List<CountryCasesView>> FindCountryCases(string countryName)
+        {
+            var result = new List<CountryCasesView>();
+            var notifications = await _notificationsDAO.FindByCountry(countryName, true);
+            
+            foreach (var n in notifications)
+            {
+                result.Add(new CountryCasesView(n));
+            }
+
+            return result;
+        }
     }
 }

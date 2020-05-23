@@ -9,7 +9,7 @@ namespace Covid19Watcher.Application.Interfaces
     public interface INotificationsDAO
     {
         Task<List<NotificationDocument>> ListDocuments(bool isActive, EOrdenation ordenation);
-        Task<NotificationDocument> FindByCountry(string countryName, bool isActive);
+        Task<List<NotificationDocument>> FindByCountry(string countryName, bool isActive);
         Task CreateNotificationAsync(NotificationDocument document);
         Task<NotificationDocument> FindByIdAsync(Guid id);
     }
