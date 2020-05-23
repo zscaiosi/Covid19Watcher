@@ -19,5 +19,7 @@ namespace Covid19Watcher.Application.Data.MongoDB.Documents
         public int Deaths {get;set;} = 0;
         [BsonElement("recovered")]
         public int Recovered {get;set;} = 0;
+        [BsonElement("total")]
+        public int Total {get;set;} = 0;
     }
 }

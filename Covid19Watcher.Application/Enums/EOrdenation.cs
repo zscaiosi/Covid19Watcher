@@ -5,6 +5,7 @@ namespace Covid19Watcher.Application.Enums
         CountryName = 0,
         Infections,
         Deaths,
-        Recovered
+        Recovered,
+        Total
     }
 }

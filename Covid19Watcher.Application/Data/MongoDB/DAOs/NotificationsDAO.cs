@@ -38,8 +38,6 @@ namespace Covid19Watcher.Application.Data.MongoDB.DAOs
                 Sort = oDef
             })).ToList();
         }
-        //  =>
-        //     (await _ctx.Notifications.FindAsync<NotificationDocument>(d => d.Active == isActive)).ToList();
         /// <summary>
         /// Finds the Country's active notification
         /// </summary>
@@ -77,6 +75,8 @@ namespace Covid19Watcher.Application.Data.MongoDB.DAOs
                     return Builders<NotificationDocument>.Sort.Descending(nameof(NotificationDocument.Deaths));
                 case EOrdenation.Recovered:
                     return Builders<NotificationDocument>.Sort.Descending(nameof(NotificationDocument.Recovered));
+                case EOrdenation.Total:
+                    return Builders<NotificationDocument>.Sort.Descending(nameof(NotificationDocument.Total));
                 default:
                     return Builders<NotificationDocument>.Sort.Descending(nameof(NotificationDocument.Infections));
             }

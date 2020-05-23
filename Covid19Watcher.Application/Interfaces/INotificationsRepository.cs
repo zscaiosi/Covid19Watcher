@@ -11,5 +11,11 @@ namespace Covid19Watcher.Application.Interfaces
         Task<List<NotificationDocument>> ListFilteredAsync(GetFiltersRequest filters);
         Task<Guid> CreateNotificationAsync(PostNotificationsRequest request);
         Task<NotificationDocument> FindByIdAsync(string id);
+        /// <summary>
+        /// Lists grouped by countries
+        /// </summary>
+        /// <param name="filters"></param>
+        /// <returns></returns>
+        Task<List<GroupedNotifications>> ListGroupedByCountryAsync(GetFiltersRequest filters);
     }
 }

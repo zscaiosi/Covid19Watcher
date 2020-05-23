@@ -19,7 +19,7 @@ namespace Covid19Watcher.Application.Data.MongoDB.Repositories
             _notificationsDAO = notificationsDAO;
         }
         /// <summary>
-        /// 
+        /// Lists all notifications by filter
         /// </summary>
         /// <param name="filters">GetFiltersRequest</param>
         /// <returns></returns>
@@ -39,7 +39,7 @@ namespace Covid19Watcher.Application.Data.MongoDB.Repositories
             }
             if (filters.Page > 0)
             {
-                documents = documents.Skip(filters.Page * (filters.Limit > 0 ? filters.Limit : 1)).ToList();
+                documents = documents.Skip(filters.Page * filters.Limit).ToList();
             }
             if (filters.Limit > 0)
             {
@@ -47,6 +47,41 @@ namespace Covid19Watcher.Application.Data.MongoDB.Repositories
             }
 
             return documents;
+        }
+        /// <summary>
+        /// Lists grouped by countries
+        /// </summary>
+        /// <param name="filters"></param>
+        /// <returns></returns>
+        public async Task<List<GroupedNotifications>> ListGroupedByCountryAsync(GetFiltersRequest filters)
+        {
+            var listed = await ListFilteredAsync(filters);
+            // Now groups by Country
+            Func<NotificationDocument, string> keySelector = (element) => nameof(element.CountryName);
+            Func<NotificationDocument, NotificationDocument> elementSelector = (element) => element;
+            // Groups by country calculating the ratios
+            var grouped  = listed.GroupBy(
+                keySelector,
+                elementSelector,
+                (key, elements) => {
+                    var prevH = elements.LastOrDefault().CapturedAt;
+                    var now = DateTime.UtcNow;
+                    var firstTotal = elements.LastOrDefault().Total;
+                    var firstInfected = elements.LastOrDefault().Infections;
+                    var firstRecovered = elements.LastOrDefault().Recovered;
+                    var firstDeaths = elements.LastOrDefault().Deaths;
+
+                    return new GroupedNotifications{
+                        Country = key,
+                        InfectedRation = CalcRatio(prevH.Hour, now.Hour, firstInfected, elements.FirstOrDefault().Infections),
+                        RecoveredRation = CalcRatio(prevH.Hour, now.Hour, firstRecovered, elements.FirstOrDefault().Recovered),
+                        DeathsRation = CalcRatio(prevH.Hour, now.Hour, firstDeaths, elements.FirstOrDefault().Deaths),
+                        LastNotification = elements.FirstOrDefault()
+                    };
+                }
+            );
+
+            return grouped.ToList();
         }
         /// <summary>
         /// 
@@ -81,5 +116,14 @@ namespace Covid19Watcher.Application.Data.MongoDB.Repositories
             
             return await _notificationsDAO.FindByIdAsync(_id);
         }
+        /// <summary>
+        /// Calculates a linear coefficient
+        /// </summary>
+        /// <param name="prevHour"></param>
+        /// <param name="currentHour"></param>
+        /// <param name="prevCases"></param>
+        /// <param name="cases"></param>
+        /// <returns></returns>
+        private decimal CalcRatio(int prevHour, int currentHour, int prevCases, int cases) => (cases - prevCases) / (currentHour - prevHour);
     }
 }
