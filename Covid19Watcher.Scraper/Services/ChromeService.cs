@@ -143,6 +143,7 @@ namespace Covid19Watcher.Scraper.Services
             result.Infections = confirmedSituations[0].IgnoreAfter("+").SanitizeCommas();
             result.Recovered = confirmedSituations[1].IgnoreAfter("+").SanitizeCommas();
             result.Deaths = confirmedSituations[2].IgnoreAfter("+").SanitizeCommas();
+            result.IsActive = true;
 
             // Instantiates if first iteration
             if (_postRequests == null)

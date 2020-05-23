@@ -31,7 +31,7 @@ namespace Covid19Watcher.Application.Services
                 return ErrorData(ServiceErrors.Get_ListNotificationsAsync_404_Notification);
 
             return SuccessData(
-                new GetNotificationsResponse(filters.Page, filters.Limit)
+                new GetNotificationsResponse(filters.Page, result.Count)
                 {
                     Content = result
                 }

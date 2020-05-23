@@ -99,7 +99,8 @@ namespace Covid19Watcher.Application.Data.MongoDB.Repositories
                 CapturedAt = request.CaptureTime,
                 Infections = request.Infections,
                 Deaths = request.Deaths,
-                Recovered = request.Recovered
+                Recovered = request.Recovered,
+                Total = request.Infections + request.Deaths + request.Recovered
             });
 
             return id;
