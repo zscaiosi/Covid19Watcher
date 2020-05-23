@@ -19,7 +19,7 @@ namespace Covid19Watcher.Application.Services
             _repo = repo;
         }
         /// <summary>
-        /// 
+        /// Lists all notifications
         /// </summary>
         /// <param name="filters"></param>
         /// <returns></returns>
@@ -38,7 +38,7 @@ namespace Covid19Watcher.Application.Services
             );
         }
         /// <summary>
-        /// 
+        /// Creates a new notification
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
@@ -50,7 +50,7 @@ namespace Covid19Watcher.Application.Services
             return SuccessData<Guid>(await _repo.CreateNotificationAsync(request));
         }
         /// <summary>
-        /// 
+        /// Finds notification by GUID
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>

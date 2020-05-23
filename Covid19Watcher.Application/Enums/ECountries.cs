@@ -6,6 +6,12 @@ namespace Covid19Watcher.Application.Enums
         USA,
         Uruguay,
         Argentina,
-        China
+        Vietnam,
+        China,
+        Cuba,
+        Canada,
+        Chile,
+        Germany,
+        Sweden
     }
 }

@@ -41,8 +41,6 @@ namespace Covid19Watcher.Scraper
             // Service Provider
             IServiceProvider sp = serviceCollection.BuildServiceProvider();
 
-            var cUri = configuration.GetSection("SeleniumConfigurations").GetSection("URI").Value;
-            Console.WriteLine($"HTTP to: {cUri}");
             // Gets transient
             _chrome = sp.GetService<ChromeService>();
             // Runs browser

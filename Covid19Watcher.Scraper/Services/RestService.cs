@@ -48,7 +48,7 @@ namespace Covid19Watcher.Scraper.Services
             }
             catch(Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine($"{e.Source} {e.Message}");
                 return default(T);
             }
         }

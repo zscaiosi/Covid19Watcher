@@ -61,12 +61,15 @@ namespace Covid19Watcher.Scraper.Services
                 // Now prepares client and makes POST HTTP Request
                 var client = new RestService(_factory, _conf.GetSection("API_URI").Value);
 
+                var payload = _postRequests.FirstOrDefault(pr => pr.CountryName == _currentCountry);
+
                 _httpTasks.Add(
-                    client.MakeHttpPostRequest<PostNotificationsRequest, ResultData>("notifications", _postRequests.FirstOrDefault())
+                    client.MakeHttpPostRequest<PostNotificationsRequest, ResultData>("notifications", payload)
                 );
+
+                Console.WriteLine(JsonConvert.SerializeObject(payload));
             }
 
-            Console.WriteLine(JsonConvert.SerializeObject(_postRequests.FirstOrDefault()));
             // Clear resources
             _driver.Close();
             _driver.Dispose();
@@ -85,6 +88,7 @@ namespace Covid19Watcher.Scraper.Services
                 _driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(60);
                 // Navigate to page
                 _driver.Navigate().GoToUrl(_conf.GetSection("SeleniumConfigurations").GetSection("URI").Value + _currentCountry);
+                Console.WriteLine("Page Loaded...");
             });
         }
         /// <summary>
@@ -137,12 +141,18 @@ namespace Covid19Watcher.Scraper.Services
         private void ExtractInfos(params string[] confirmedSituations)
         {
             var result = new PostNotificationsRequest();
+            var active = confirmedSituations[0];
+            var recovered = confirmedSituations[1];
+            var deaths = confirmedSituations[2];
+            
+            Console.WriteLine($"Posting infos for {_currentCountry}");
+            Console.WriteLine($"{active} - {recovered} - {deaths}");
 
             result.CaptureTime = DateTime.UtcNow;
             result.CountryName = _currentCountry;
-            result.Infections = confirmedSituations[0].IgnoreAfter("+").SanitizeCommas();
-            result.Recovered = confirmedSituations[1].IgnoreAfter("+").SanitizeCommas();
-            result.Deaths = confirmedSituations[2].IgnoreAfter("+").SanitizeCommas();
+            result.Infections = active.Contains("+") ? active.IgnoreAfter("+").SanitizeCommas() : active.SanitizeCommas();
+            result.Recovered = recovered.Contains("+") ? recovered.IgnoreAfter("+").SanitizeCommas() : recovered.SanitizeCommas();
+            result.Deaths = deaths.Contains("+") ? deaths.IgnoreAfter("+").SanitizeCommas() : deaths.SanitizeCommas();
             result.IsActive = true;
 
             // Instantiates if first iteration
