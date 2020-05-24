@@ -16,6 +16,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Covid19Watcher.API.Public
 {
@@ -31,6 +34,8 @@ namespace Covid19Watcher.API.Public
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors();
+            services.AddSingleton<IConfiguration>(Configuration);
             // Sets up Mongodb configurations and injects by DI Container
             services.Configure<MongoDBSettings>(
                 Configuration.GetSection(nameof(MongoDBSettings))
@@ -40,6 +45,38 @@ namespace Covid19Watcher.API.Public
             services.AddSingleton<INotificationsDAO, NotificationsDAO>();
             services.AddSingleton<INotificationsRepository, NotificationsRepository>();
             services.AddSingleton<INotificationsService, NotificationsService>();
+            // Gets key from config
+            var key = Encoding.ASCII.GetBytes(Configuration.GetSection("Credentials").GetSection("key").Value);
+
+            services.AddAuthentication(x =>
+            {	
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(opt => {
+                opt.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key)
+                };
+                // Define the events handler
+                opt.Events = new JwtBearerEvents
+                {
+                    OnAuthenticationFailed = context =>
+                    {
+                        Console.WriteLine("Token inválido..:. " + context.Exception.Message);
+                        return Task.CompletedTask;
+                    },
+                    OnTokenValidated = context =>
+                    {
+                        Console.WriteLine("Token válido...: " + context.SecurityToken);
+                        return Task.CompletedTask;
+                    }
+                };
+            });
 
             services.AddControllers();
 
@@ -56,6 +93,12 @@ namespace Covid19Watcher.API.Public
             // {
             //     app.UseDeveloperExceptionPage();
             // }
+            // It is a public REST API
+            app.UseCors(opt => {
+                opt.AllowAnyHeader();
+                opt.AllowAnyOrigin();
+                opt.AllowAnyMethod();
+            });
 
             app.UseHttpsRedirection();
 
@@ -69,6 +112,8 @@ namespace Covid19Watcher.API.Public
 
             app.UseRouting();
 
+            app.UseAuthentication();
+            app.UseAuthorization();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

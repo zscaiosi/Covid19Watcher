@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Covid19Watcher.Application.Contracts;
 using Covid19Watcher.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Covid19Watcher.API.Public.Controllers
 {
@@ -23,6 +24,7 @@ namespace Covid19Watcher.API.Public.Controllers
         /// <param name="filters"></param>
         /// <returns></returns>
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> Get([FromQuery]GetFiltersRequest filters)
         {
             try
@@ -50,6 +52,7 @@ namespace Covid19Watcher.API.Public.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Post([FromBody]PostNotificationsRequest request)
         {
             try
