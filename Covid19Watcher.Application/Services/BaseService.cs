@@ -1,4 +1,5 @@
 using Covid19Watcher.Application.Errors;
+using Covid19Watcher.Application.Helpers;
 using System;
 using System.Linq;
 
@@ -40,7 +41,7 @@ namespace Covid19Watcher.Application.Services
         {
             Success = false;
             Code = (int)error;
-            ErrorMessage = error.ToString();
+            ErrorMessage = error.GetEnumDescription();
         }
         public int Code {get;set;}
         public string ErrorMessage {get;set;}

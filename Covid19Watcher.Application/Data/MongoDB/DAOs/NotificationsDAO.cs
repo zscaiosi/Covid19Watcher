@@ -25,10 +25,18 @@ namespace Covid19Watcher.Application.Data.MongoDB.DAOs
         /// </summary>
         /// <typeparam name="NotificationDocument"></typeparam>
         /// <returns></returns>
-        public async Task<List<NotificationDocument>> ListDocuments(bool isActive, EOrdenation ordenation)
+        public async Task<List<NotificationDocument>> ListDocuments(bool isActive, EOrdenation ordenation, string countryName = null)
         {
+            FilterDefinition<NotificationDocument>[] filtersDef = new FilterDefinition<NotificationDocument>[2];
+            filtersDef[0] = Builders<NotificationDocument>.Filter.Eq(nameof(NotificationDocument.Active), isActive);
+            // If filtered by name, then searches only those, otherwise searches for all Countries != empty string
+            if (!string.IsNullOrEmpty(countryName))
+                filtersDef[1] = Builders<NotificationDocument>.Filter.Eq(nameof(NotificationDocument.CountryName), countryName);
+            else
+                filtersDef[1] = Builders<NotificationDocument>.Filter.Ne(nameof(NotificationDocument.CountryName), countryName);
+
             FilterDefinition<NotificationDocument> filter = Builders<NotificationDocument>.Filter.And(
-                Builders<NotificationDocument>.Filter.Eq(nameof(NotificationDocument.Active), isActive)
+                filtersDef
             );
 
             var oDef = this.OrderBy(ordenation);
@@ -38,14 +46,6 @@ namespace Covid19Watcher.Application.Data.MongoDB.DAOs
                 Sort = oDef
             })).ToList();
         }
-        /// <summary>
-        /// Finds the Country's active notification
-        /// </summary>
-        /// <param name="countryName"></param>
-        /// <typeparam name="NotificationDocument"></typeparam>
-        /// <returns></returns>
-        public async Task<List<NotificationDocument>> FindByCountry(string countryName, bool isActive) =>
-            (await _ctx.Notifications.FindAsync<NotificationDocument>(n => n.CountryName == countryName && n.Active == isActive)).ToList();
         /// <summary>
         /// Inserts one document into collection
         /// </summary>
@@ -69,16 +69,18 @@ namespace Covid19Watcher.Application.Data.MongoDB.DAOs
         {
             switch (ordenation)
             {
+                case EOrdenation.CapturedAt:
+                    return Builders<NotificationDocument>.Sort.Descending(nameof(NotificationDocument.CountryName).ToLower());
                 case EOrdenation.Infections:
-                    return Builders<NotificationDocument>.Sort.Descending(nameof(NotificationDocument.Infections));
+                    return Builders<NotificationDocument>.Sort.Descending(nameof(NotificationDocument.Infections).ToLower());
                 case EOrdenation.Deaths:
-                    return Builders<NotificationDocument>.Sort.Descending(nameof(NotificationDocument.Deaths));
+                    return Builders<NotificationDocument>.Sort.Descending(nameof(NotificationDocument.Deaths).ToLower());
                 case EOrdenation.Recovered:
-                    return Builders<NotificationDocument>.Sort.Descending(nameof(NotificationDocument.Recovered));
+                    return Builders<NotificationDocument>.Sort.Descending(nameof(NotificationDocument.Recovered).ToLower());
                 case EOrdenation.Total:
-                    return Builders<NotificationDocument>.Sort.Descending(nameof(NotificationDocument.Total));
+                    return Builders<NotificationDocument>.Sort.Descending(nameof(NotificationDocument.Total).ToLower());
                 default:
-                    return Builders<NotificationDocument>.Sort.Descending(nameof(NotificationDocument.Infections));
+                    return Builders<NotificationDocument>.Sort.Descending(nameof(NotificationDocument.Infections).ToLower());
             }
         }
     }

@@ -5,6 +5,7 @@ using Covid19Watcher.Application.Data.MongoDB.Documents;
 using Covid19Watcher.Application.Interfaces;
 using System.Linq;
 using System;
+using Covid19Watcher.Application.Enums;
 
 namespace Covid19Watcher.Application.Data.MongoDB.Repositories
 {
@@ -27,14 +28,8 @@ namespace Covid19Watcher.Application.Data.MongoDB.Repositories
         {
             List<NotificationDocument> documents = new List<NotificationDocument>();
             // Retrieves and manipulates by filters
-            if (!string.IsNullOrEmpty(filters.Country))
-            {
-                documents = await _notificationsDAO.FindByCountry(filters.Country, filters.onlyActives);
-            }
-            else
-            {
-                documents = await _notificationsDAO.ListDocuments(filters.onlyActives, filters.OrderBy);
-            }
+            documents = await _notificationsDAO.ListDocuments(filters.onlyActives, filters.OrderBy, filters.Country);
+
             if (filters.Page > 0)
             {
                 documents = documents.Skip(filters.Page * filters.Limit).ToList();
@@ -45,41 +40,6 @@ namespace Covid19Watcher.Application.Data.MongoDB.Repositories
             }
 
             return documents;
-        }
-        /// <summary>
-        /// Lists grouped by countries
-        /// </summary>
-        /// <param name="filters"></param>
-        /// <returns></returns>
-        public async Task<List<GroupedNotifications>> ListGroupedByCountryAsync(GetFiltersRequest filters)
-        {
-            var listed = await ListFilteredAsync(filters);
-            // Now groups by Country
-            Func<NotificationDocument, string> keySelector = (element) => nameof(element.CountryName);
-            Func<NotificationDocument, NotificationDocument> elementSelector = (element) => element;
-            // Groups by country calculating the ratios
-            var grouped  = listed.GroupBy(
-                keySelector,
-                elementSelector,
-                (key, elements) => {
-                    var prevH = elements.LastOrDefault().CapturedAt;
-                    var now = DateTime.UtcNow;
-                    var firstTotal = elements.LastOrDefault().Total;
-                    var firstInfected = elements.LastOrDefault().Infections;
-                    var firstRecovered = elements.LastOrDefault().Recovered;
-                    var firstDeaths = elements.LastOrDefault().Deaths;
-
-                    return new GroupedNotifications{
-                        Country = key,
-                        InfectedRation = CalcRatio(prevH.Hour, now.Hour, firstInfected, elements.FirstOrDefault().Infections),
-                        RecoveredRation = CalcRatio(prevH.Hour, now.Hour, firstRecovered, elements.FirstOrDefault().Recovered),
-                        DeathsRation = CalcRatio(prevH.Hour, now.Hour, firstDeaths, elements.FirstOrDefault().Deaths),
-                        LastNotification = elements.FirstOrDefault()
-                    };
-                }
-            );
-
-            return grouped.ToList();
         }
         /// <summary>
         /// Creates a new notification
@@ -132,7 +92,7 @@ namespace Covid19Watcher.Application.Data.MongoDB.Repositories
         public async Task<List<CountryCasesView>> FindCountryCases(string countryName)
         {
             var result = new List<CountryCasesView>();
-            var notifications = await _notificationsDAO.FindByCountry(countryName, true);
+            var notifications = await _notificationsDAO.ListDocuments(true, EOrdenation.CapturedAt, countryName);
             
             foreach (var n in notifications)
             {

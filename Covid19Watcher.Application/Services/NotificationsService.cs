@@ -26,6 +26,9 @@ namespace Covid19Watcher.Application.Services
         /// <returns></returns>
         public async Task<ResultData> ListNotificationsAsync(GetFiltersRequest filters)
         {
+            if (filters.Page < 0 || filters.Limit < 0 || !Enum.IsDefined(typeof(EOrdenation), filters.OrderBy))
+                return ErrorData(ServiceErrors.Get_ListNotificationsAsync_400_Filters);
+            
             var result = await _repo.ListFilteredAsync(filters);
 
             if (result.Count < 1)
@@ -45,7 +48,7 @@ namespace Covid19Watcher.Application.Services
         /// <returns></returns>
         public async Task<ResultData> CreateNotificationAsync(PostNotificationsRequest request)
         {
-            if (request.CaptureTime == null || string.IsNullOrEmpty(request.CountryName) || !Enum.IsDefined(typeof(ECountries), request.CountryName))
+            if (request.CaptureTime == null || string.IsNullOrEmpty(request.CountryName))
                 return ErrorData(ServiceErrors.Post_CreateNotificationAsync_400_Payload);
             
             if (await ShouldCreateNew(request))

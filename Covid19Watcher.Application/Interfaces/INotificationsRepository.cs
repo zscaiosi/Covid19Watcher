@@ -8,15 +8,24 @@ namespace Covid19Watcher.Application.Interfaces
 {
     public interface INotificationsRepository
     {
-        Task<List<NotificationDocument>> ListFilteredAsync(GetFiltersRequest filters);
-        Task<Guid> CreateNotificationAsync(PostNotificationsRequest request);
-        Task<NotificationDocument> FindByIdAsync(string id);
         /// <summary>
-        /// Lists grouped by countries
+        /// Lists all notifications with filters
         /// </summary>
         /// <param name="filters"></param>
         /// <returns></returns>
-        Task<List<GroupedNotifications>> ListGroupedByCountryAsync(GetFiltersRequest filters);
+        Task<List<NotificationDocument>> ListFilteredAsync(GetFiltersRequest filters);
+        /// <summary>
+        /// Creates one notification
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        Task<Guid> CreateNotificationAsync(PostNotificationsRequest request);
+        /// <summary>
+        /// Finds notification by GUID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        Task<NotificationDocument> FindByIdAsync(string id);
         /// <summary>
         /// Finds only cases view
         /// </summary>

@@ -9,6 +9,8 @@ namespace Covid19Watcher.Application.Errors
         [Description("Invalid ID.")]
         GetFind_FindByIdAsync_400_Id,
         [Description("Not found.")]
-        Get_ListNotificationsAsync_404_Notification
+        Get_ListNotificationsAsync_404_Notification,
+        [Description("Invalid filters.")]
+        Get_ListNotificationsAsync_400_Filters
     }
 }
