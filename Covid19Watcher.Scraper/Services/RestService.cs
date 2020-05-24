@@ -40,6 +40,8 @@ namespace Covid19Watcher.Scraper.Services
                     ));
                 
                 var response = await message.Content.ReadAsStringAsync();
+
+                Console.WriteLine($"HTTP Response: {response}");
                 
                 if (string.IsNullOrEmpty(response))
                     throw new ArgumentNullException(uri);

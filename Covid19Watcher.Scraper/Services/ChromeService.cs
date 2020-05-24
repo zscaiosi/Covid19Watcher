@@ -108,7 +108,7 @@ namespace Covid19Watcher.Scraper.Services
                 
                 Console.WriteLine($"{_driver.Manage().Window.Size.Width} x {_driver.Manage().Window.Size.Height}");
                 // Waits
-                _waiter = new WebDriverWait(_driver, TimeSpan.FromSeconds(15));
+                _waiter = new WebDriverWait(_driver, TimeSpan.FromSeconds(5));
                 // One minute
                 _driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(60);
 
