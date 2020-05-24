@@ -64,6 +64,9 @@ namespace Covid19Watcher.Scraper.Services
 
             foreach (var c in countries)
             {
+                Console.WriteLine("************************ \n");
+                Console.WriteLine(c);
+
                 _currentCountry = c;
 
                 await LoadPageAsync();
@@ -80,6 +83,7 @@ namespace Covid19Watcher.Scraper.Services
                 );
 
                 Console.WriteLine(JsonConvert.SerializeObject(payload));
+                Console.WriteLine("************************ \n");
             }
 
             // Clear resources
@@ -130,6 +134,8 @@ namespace Covid19Watcher.Scraper.Services
                     
                     // Retrieves stats from clicked country
                     var infoTileElement = ClickCountryAndGetStats($"div#{_currentCountry.ToLower().Trim()}.area");
+                    if (infoTileElement == null)
+                        return;
 
                     var barElement = infoTileElement
                         .FindElement(By.ClassName("bar"));
@@ -153,7 +159,7 @@ namespace Covid19Watcher.Scraper.Services
                 }
                 catch (Exception exc)
                 {
-                    Console.WriteLine($"Something went wrong here: {_driver.Url}... \n But don't worry, we can keep trying at the next Country.");
+                    Console.WriteLine($"{exc.Message} - Something went wrong here: {_driver.Url}. But don't worry, we can keep trying at the next Country.");
                 }
             });
         }
@@ -231,25 +237,33 @@ namespace Covid19Watcher.Scraper.Services
         /// <returns></returns>
         private IWebElement ClickCountryAndGetStats(string selector)
         {
-            var localDiv = _waiter.Until(d => d.FindElement(By.CssSelector(selector)));
-            // Selects the country to find stats about
-            localDiv.Click();
+            try
+            {
+                var localDiv = _waiter.Until(d => d.FindElement(By.CssSelector(selector)));
+                // Selects the country to find stats about
+                localDiv.Click();
 
-            Console.WriteLine($"Getting stats at: {_driver.Url}");
+                Console.WriteLine($"Getting stats at: {_driver.Url}");
 
-            var overviewContentElement = _driver
-                .FindElementById("main")
-                .FindElement(By.ClassName("desktop"))
-                .FindElement(By.ClassName("wholePage"))
-                .FindElement(By.ClassName("content"))
-                .FindElement(By.ClassName("verticalWrapper"))
-                .FindElement(By.ClassName("verticalContent"))
-                .FindElement(By.ClassName("overview"))
-                .FindElement(By.ClassName("overviewContent"));
+                var overviewContentElement = _driver
+                    .FindElementById("main")
+                    .FindElement(By.ClassName("desktop"))
+                    .FindElement(By.ClassName("wholePage"))
+                    .FindElement(By.ClassName("content"))
+                    .FindElement(By.ClassName("verticalWrapper"))
+                    .FindElement(By.ClassName("verticalContent"))
+                    .FindElement(By.ClassName("overview"))
+                    .FindElement(By.ClassName("overviewContent"));
 
-            // class="infoTile"
-            return overviewContentElement
-                .FindElement(By.ClassName("infoTile"));
+                // class="infoTile"
+                return overviewContentElement
+                    .FindElement(By.ClassName("infoTile"));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"In ClickCountryAndGetStats got {e.Message}. No stats for {_driver.Url}");
+                return null;
+            }
         }
     }
 }
