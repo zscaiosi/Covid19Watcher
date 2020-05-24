@@ -97,7 +97,7 @@ namespace Covid19Watcher.API.Public
                 opt.AllowAnyMethod();
             });
 
-            app.UseHttpsRedirection();
+            // app.UseHttpsRedirection();
 
             app.UseSwagger();
 
