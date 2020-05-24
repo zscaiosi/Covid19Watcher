@@ -26,7 +26,7 @@ namespace Covid19Watcher.API.Public.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> PostAuthenticateAsync([FromBody]PostAuth request)
+        public IActionResult PostAuthenticate([FromBody]PostAuth request)
         {
             if (request == null || string.IsNullOrEmpty(request.Login) || string.IsNullOrEmpty(request.Password))
                 return StatusCode(401);
@@ -54,7 +54,7 @@ namespace Covid19Watcher.API.Public.Controllers
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
-            return StatusCode(200, new { expiresIn = tokenDescriptor.Expires, accessToken = tokenHandler.WriteToken(token) });
+            return StatusCode(200, new PostAuthResponse{ AccessToken = tokenHandler.WriteToken(token) });
         }
     }
 }

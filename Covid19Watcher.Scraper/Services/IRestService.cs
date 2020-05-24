@@ -14,6 +14,6 @@ namespace Covid19Watcher.Scraper.Services
         /// <typeparam name="I"></typeparam>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        Task<T> MakeHttpPostRequest<I, T>(string uri, I data, Dictionary<string, string> headers = null);
+        Task<T> MakeHttpPostRequest<I, T>(string uri, I data, string medisType = "application/json");
     }
 }

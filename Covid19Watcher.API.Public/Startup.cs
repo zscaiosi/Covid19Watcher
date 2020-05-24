@@ -56,7 +56,8 @@ namespace Covid19Watcher.API.Public
             .AddJwtBearer(opt => {
                 opt.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidateIssuer = false,
+                    ValidateIssuer = true,
+                    ValidIssuer = "Covid19Watcher",
                     ValidateAudience = false,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
@@ -89,10 +90,6 @@ namespace Covid19Watcher.API.Public
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            // if (env.IsDevelopment())
-            // {
-            //     app.UseDeveloperExceptionPage();
-            // }
             // It is a public REST API
             app.UseCors(opt => {
                 opt.AllowAnyHeader();
