@@ -4,13 +4,13 @@ namespace Covid19Watcher.Scraper.WebElements
 {
     public class InfoTile
     {
-        public InfoTile(IWebElement ith, IWebElement c, IWebElement itd)
+        public InfoTile(IWebElement b, IWebElement c, IWebElement itd)
         {
-            InfoTileheader = ith;
+            Bar = b;
             Confirmed = c;
             InfoTileData = itd;
         }
-        public IWebElement InfoTileheader {get;set;}
+        public IWebElement Bar {get;set;}
         public IWebElement Confirmed {get;set;}
         public IWebElement InfoTileData {get;set;}
     }

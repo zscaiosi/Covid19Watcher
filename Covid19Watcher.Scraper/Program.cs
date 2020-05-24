@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Covid19Watcher.Scraper.Services;
 using Covid19Watcher.Application.Contracts;
+using Newtonsoft.Json;
 
 namespace Covid19Watcher.Scraper
 {
@@ -20,7 +21,7 @@ namespace Covid19Watcher.Scraper
             {
                 Thread.CurrentThread.CurrentCulture = new CultureInfo("pt-BR");
                 
-                Console.WriteLine("Starting...");
+                Console.WriteLine($"Starting with args: {JsonConvert.SerializeObject(args)}");
                 // Waits for execution
                 MainAsync(args).Wait();
 
@@ -31,6 +32,7 @@ namespace Covid19Watcher.Scraper
             catch(Exception e)
             {
                 Console.WriteLine($"{e.Source}: {e.Message}");
+                _chrome.Close();
                 Environment.Exit(1);
             }
         }
@@ -44,7 +46,7 @@ namespace Covid19Watcher.Scraper
             // Gets transient
             _chrome = sp.GetService<ChromeService>();
             // Runs browser
-            await _chrome.RunAsync();
+            await _chrome.RunAsync(args);
         }
         // Services DI
         private static void ConfigureServices(IServiceCollection serviceCollection)

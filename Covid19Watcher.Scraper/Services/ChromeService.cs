@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using OpenQA.Selenium.Chrome;
 using Covid19Watcher.Application.Contracts;
 using OpenQA.Selenium;
-using Covid19Watcher.Scraper.WebElements;
+using System.Drawing;
 using System.Linq;
 using Covid19Watcher.Application.Helpers;
 using Covid19Watcher.Application.Enums;
@@ -12,6 +12,8 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using Covid19Watcher.Application.Services;
 using System.Net.Http;
+using Covid19Watcher.Scraper.WebElements;
+using OpenQA.Selenium.Support.UI;
 
 namespace Covid19Watcher.Scraper.Services
 {
@@ -26,16 +28,20 @@ namespace Covid19Watcher.Scraper.Services
         protected string _currentCountry {get;set;}
         private IHttpClientFactory _factory;
         private List<Task<ResultData>> _httpTasks;
+        private WebDriverWait _waiter;
         public ChromeService(IConfiguration conf, IHttpClientFactory factory)
         {
             _conf = conf;
             // Sets chrome driver
             var options = new ChromeOptions();
+            options.PageLoadStrategy = PageLoadStrategy.Normal;
             options.AddArgument("--headless");
             _driver = new ChromeDriver(
                 _conf.GetSection("SeleniumConfigurations").GetSection("GoogleDriver").Value,
                 options
             );
+            // Navigates to page
+            _driver.Navigate().GoToUrl(_conf.GetSection("SeleniumConfigurations").GetSection("URI").Value);
 
             _factory = factory;
             _httpTasks = new List<Task<ResultData>>();
@@ -44,11 +50,17 @@ namespace Covid19Watcher.Scraper.Services
         /// Runs browser async
         /// </summary>
         /// <returns></returns>
-        public async Task RunAsync()
+        public async Task RunAsync(string[] args = null)
         {
-            // Dynamically searches for all intended countries.
-            // It is way more efficient than navigating throught the page and sinulating clicks and types
-            var countries = Enum.GetNames(typeof(ECountries));
+            // Dynamically searches for all intended countries, one at a time.
+            string[] countries = null;
+            // Did receive countries in arguments
+            if (args != null && args.Length > 0)
+                countries = args;
+            else
+                countries = Enum.GetNames(typeof(ECountries));
+
+            Console.WriteLine($"Will notify for: {JsonConvert.SerializeObject(countries)}");
 
             foreach (var c in countries)
             {
@@ -71,8 +83,7 @@ namespace Covid19Watcher.Scraper.Services
             }
 
             // Clear resources
-            _driver.Close();
-            _driver.Dispose();
+            Close();
             // Waits for all HTTP requests
             var resultDatas = await Task.WhenAll(_httpTasks);
 
@@ -81,13 +92,26 @@ namespace Covid19Watcher.Scraper.Services
                 Console.WriteLine(JsonConvert.SerializeObject(rd));
             }
         }
+        /// <summary>
+        /// Closes driver
+        /// </summary>
+        public void Close()
+        {
+            _driver.Quit();
+            _driver.Dispose();
+        }
         private async Task LoadPageAsync()
         {
             await Task.Run(() => {
+                // Resize
+                _driver.Manage().Window.Size = new Size(1300, 950);
+                
+                Console.WriteLine($"{_driver.Manage().Window.Size.Width} x {_driver.Manage().Window.Size.Height}");
+                // Waits
+                _waiter = new WebDriverWait(_driver, TimeSpan.FromSeconds(15));
                 // One minute
                 _driver.Manage().Timeouts().PageLoad = TimeSpan.FromSeconds(60);
-                // Navigate to page
-                _driver.Navigate().GoToUrl(_conf.GetSection("SeleniumConfigurations").GetSection("URI").Value + _currentCountry);
+
                 Console.WriteLine("Page Loaded...");
             });
         }
@@ -98,39 +122,39 @@ namespace Covid19Watcher.Scraper.Services
         private async Task LoadPanelAsync()
         {
             await Task.Run(() => {
-                var countryTabElement = _driver
-                    .FindElementById("main")
-                    .FindElement(By.ClassName("desktop"))
-                    .FindElement(By.ClassName("wholePage"))
-                    .FindElement(By.ClassName("content"))
-                    .FindElement(By.ClassName("countryPanel"))
-                    .FindElement(By.CssSelector("div.country.tab"));
-                
-                // class="country lab"
-                var infoTileElement = countryTabElement
-                    .FindElement(By.ClassName("infoTile"));
-                
-                var countryTab = new CountryTab(null, infoTileElement, null);
-                // class="infoTile"
-                var infoTileHeaderElement = infoTileElement
-                    .FindElement(By.ClassName("infoTileHeader"));
-                var confirmedElement = infoTileElement
-                    .FindElement(By.ClassName("confirmed"));
-                var infoTileDataElement = infoTileElement
-                    .FindElement(By.ClassName("infoTileData"));
+                try
+                {
+                    // We must ensure it is globally set before clicking country (https://www.bing.com/covid/*)
+                    if (_driver.Url.Count() > _conf.GetSection("SeleniumConfigurations").GetSection("URI").Value.Length)
+                        ClickCloseSelectedCountry();
+                    
+                    // Retrieves stats from clicked country
+                    var infoTileElement = ClickCountryAndGetStats($"div#{_currentCountry.ToLower().Trim()}.area");
 
-                var infoTile = new InfoTile(infoTileHeaderElement, confirmedElement, infoTileDataElement);
+                    var barElement = infoTileElement
+                        .FindElement(By.ClassName("bar"));
+                    var confirmedElement = infoTileElement
+                        .FindElement(By.ClassName("confirmed"));
+                    var infoTileDataElement = infoTileElement
+                        .FindElement(By.ClassName("infoTileData"));
 
-                var infoTileData = new InfoTileData(infoTile.InfoTileData.FindElements(By.ClassName("legend")).ToArray());
+                    var infoTile = new InfoTile(barElement, confirmedElement, infoTileDataElement);
 
-                ExtractInfos(
-                    new string[]
-                    {
-                        infoTileData.GetActive(),
-                        infoTileData.GetRecovered(),
-                        infoTileData.GetDeaths()
-                    }
-                );
+                    var infoTileData = new InfoTileData(infoTile.InfoTileData.FindElements(By.ClassName("legend")).ToArray());
+
+                    ExtractInfos(
+                        new string[]
+                        {
+                            infoTileData.GetActive(),
+                            infoTileData.GetRecovered(),
+                            infoTileData.GetDeaths()
+                        }
+                    );
+                }
+                catch (Exception exc)
+                {
+                    Console.WriteLine($"Something went wrong here: {_driver.Url}... \n But don't worry, we can keep trying at the next Country.");
+                }
             });
         }
         /// <summary>
@@ -141,18 +165,27 @@ namespace Covid19Watcher.Scraper.Services
         private void ExtractInfos(params string[] confirmedSituations)
         {
             var result = new PostNotificationsRequest();
-            var active = confirmedSituations[0];
-            var recovered = confirmedSituations[1];
-            var deaths = confirmedSituations[2];
+            var active = confirmedSituations[0] ?? "0";
+            var recovered = confirmedSituations[1] ?? "0";
+            var deaths = confirmedSituations[2] ?? "0";
             
             Console.WriteLine($"Posting infos for {_currentCountry}");
-            Console.WriteLine($"{active} - {recovered} - {deaths}");
+            Console.WriteLine($"active={active.Replace("\n", "")}; recovered={recovered.Replace("\n", "")}; deaths={deaths.Replace("\n", "")}");
+
+            active = active.Contains("+") ? active.IgnoreAfter("+").SanitizeCommas() : active.SanitizeCommas();
+            recovered = recovered.Contains("+") ? recovered.IgnoreAfter("+").SanitizeCommas() : recovered.SanitizeCommas();
+            deaths = deaths.Contains("+") ? deaths.IgnoreAfter("+").SanitizeCommas() : deaths.SanitizeCommas();
 
             result.CaptureTime = DateTime.UtcNow;
             result.CountryName = _currentCountry;
-            result.Infections = active.Contains("+") ? active.IgnoreAfter("+").SanitizeCommas() : active.SanitizeCommas();
-            result.Recovered = recovered.Contains("+") ? recovered.IgnoreAfter("+").SanitizeCommas() : recovered.SanitizeCommas();
-            result.Deaths = deaths.Contains("+") ? deaths.IgnoreAfter("+").SanitizeCommas() : deaths.SanitizeCommas();
+
+            if (int.TryParse(active, out var inf))
+                result.Infections = inf;
+            if (int.TryParse(recovered, out var rec))
+                result.Recovered = rec;
+            if (int.TryParse(deaths, out var dea))
+                result.Deaths = dea;
+            
             result.IsActive = true;
 
             // Instantiates if first iteration
@@ -160,6 +193,63 @@ namespace Covid19Watcher.Scraper.Services
                 _postRequests = new List<PostNotificationsRequest>();
             
             _postRequests.Add(result);
+        }
+        /// <summary>
+        /// Clicks to close default country. If can't close region, then goes directly to next one.
+        /// </summary>
+        private void ClickCloseSelectedCountry()
+        {
+            Console.WriteLine($"We are at: {_driver.Url}");
+            IWebElement countryElement;
+            IWebElement closeSpan;
+
+            try
+            {
+                // Just below Global area
+                countryElement = _waiter.Until(d => d.FindElement(By.CssSelector("div.combinedArea div.selectedAreas div.areaDiv:nth-child(3)")));
+                // Get span with close svg
+                closeSpan = countryElement.FindElement(By.CssSelector("div.area.selectedArea div.areaTotal div.secondaryInfo span"));
+
+                // Now clicks it to dismiss
+                closeSpan.Click();
+
+                Console.WriteLine($"Closing region and going to Global at: {_driver.Url}");
+            }
+            catch (OpenQA.Selenium.WebDriverTimeoutException e)
+            {
+                Console.WriteLine($"WebDriverTimeoutException {e.Message} at:\n {_driver.Url}");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Exception {e.Message} at:\n {_driver.Url}");
+            }
+        }
+        /// <summary>
+        /// Clicks a country to get infos from
+        /// </summary>
+        /// <param name="country"></param>
+        /// <returns></returns>
+        private IWebElement ClickCountryAndGetStats(string selector)
+        {
+            var localDiv = _waiter.Until(d => d.FindElement(By.CssSelector(selector)));
+            // Selects the country to find stats about
+            localDiv.Click();
+
+            Console.WriteLine($"Getting stats at: {_driver.Url}");
+
+            var overviewContentElement = _driver
+                .FindElementById("main")
+                .FindElement(By.ClassName("desktop"))
+                .FindElement(By.ClassName("wholePage"))
+                .FindElement(By.ClassName("content"))
+                .FindElement(By.ClassName("verticalWrapper"))
+                .FindElement(By.ClassName("verticalContent"))
+                .FindElement(By.ClassName("overview"))
+                .FindElement(By.ClassName("overviewContent"));
+
+            // class="infoTile"
+            return overviewContentElement
+                .FindElement(By.ClassName("infoTile"));
         }
     }
 }

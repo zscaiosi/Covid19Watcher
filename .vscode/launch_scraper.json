@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/Covid19Watcher.Scraper/bin/Debug/netcoreapp3.1/Covid19Watcher.Scraper.dll",
-            "args": [],
+            "args": ["Brazil", "UnitedStates", "Uruguay", "Vietnam", "ChinaMainLand"],
             "cwd": "${workspaceFolder}/Covid19Watcher.Scraper",
             "console": "internalConsole",
             "stopAtEntry": false

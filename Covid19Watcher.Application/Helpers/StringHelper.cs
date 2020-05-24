@@ -9,13 +9,11 @@ namespace Covid19Watcher.Application.Helpers
         /// </summary>
         /// <param name="number"></param>
         /// <returns></returns>
-        public static int SanitizeCommas(this string number) => int.Parse(
-            number.Contains(".")
+        public static string SanitizeCommas(this string number) => number.Contains(".")
             ?
                 String.Join("", number.Split('.'))
             :
-                String.Join("", number.Split(','))
-        );
+                String.Join("", number.Split(','));
         /// <summary>
         /// Ignores string portion after a delimiter
         /// </summary>
