@@ -1,5 +1,6 @@
 Covid19Watcher.API.Public/obj
 Covid19Watcher.API.Public/bin
+Covid19Watcher.API.Public/out
 Covid19Watcher.API.Public/*.json
 Covid19Watcher.Application/*.json
 Covid19Watcher.Application/obj
