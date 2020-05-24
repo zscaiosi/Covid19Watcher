@@ -3,19 +3,19 @@
 ### How to run and use it:
 - Install Docker daemon
 - Within Covid19Watcher run:
-<br/>
+
 ```bash
     docker build -t covid19watcher:latest . && docker run -p 5000:5000 -d covid19watcher:latest
 ```
 - Now run crawler/scraper with:
-<br/>
+
 ```bash
     cd Covid19Watcher.Scraper &&
     dotnet run -- Brazil UnitedStates ChinaMainLand {all intended countries here}
 ```
 - You must make your own appsettings.json file into each project's folder!
 - API template:
-<br/>
+
 ```json
 {
   "MongoDBSettings": {
@@ -39,7 +39,7 @@
 }
 ```
 - Scraper template:
-<br/>
+
 ```json
 {
     "SeleniumConfigurations": {
